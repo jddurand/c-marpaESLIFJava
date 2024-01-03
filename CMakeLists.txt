@@ -147,11 +147,6 @@ install_jar_exports(
 # Create documentation: UseJava does not allow to specify a COMPONENT, so we do it ourself
 #
 if(Java_JAVADOC_EXECUTABLE)
-  if (CMAKE_HOST_WIN32 AND NOT CYGWIN AND CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
-    set(_UseJava_PATH_SEP "$<SEMICOLON>")
-  else ()
-    set(_UseJava_PATH_SEP ":")
-  endif()
   set(_javadoc_builddir )
   cmake_helpers_call(add_custom_target marpaESLIFJava_javadoc ALL
     COMMAND ${Java_JAVADOC_EXECUTABLE}
@@ -197,7 +192,7 @@ get_target_property(marpaESLIFJavaTestJarFile marpaESLIFJavaTestJar JAR_FILE)
 cmake_path(CONVERT "x;y" TO_NATIVE_PATH_LIST _xy)
 string(SUBSTRING "${_xy}" 1 1 _sep)
 if(_sep STREQUAL ";")
-  set(_sep "\\\\\\\\\;")
+  set(_sep "\\$<SEMICOLON>")
 endif()
 #
 # Declare the test. cmake_helpers_exe() has the logic to do path modifications. So we build
