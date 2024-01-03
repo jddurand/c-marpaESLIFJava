@@ -1,27 +1,27 @@
 #
 # Multi-config generator, e.g. Visual Studio on Windows:
 #
-# cmake -S c-marpaESLIF-java -B c-marpaESLIF-java-build
-# cmake --build c-marpaESLIF-java-build --config RelWithDebInfo
-# ctest --test-dir c-marpaESLIF-java-build -C RelWithDebInfo
+# cmake -S c-marpaESLIFJava -B c-marpaESLIFJava-build
+# cmake --build c-marpaESLIFJava-build --config RelWithDebInfo
+# ctest --test-dir c-marpaESLIFJava-build -C RelWithDebInfo
 # Windows:
-#   cmake --install c-marpaESLIF-java-build --config RelWithDebInfo --prefix %cd%/c-marpaESLIF-java-install
+#   cmake --install c-marpaESLIFJava-build --config RelWithDebInfo --prefix %cd%/c-marpaESLIFJava-install
 # Others:
-#   cmake --install c-marpaESLIF-java-build --config RelWithDebInfo --prefix `pwd`/c-marpaESLIF-java-install
-# cmake --build c-marpaESLIF-java-build --config RelWithDebInfo --target package
+#   cmake --install c-marpaESLIFJava-build --config RelWithDebInfo --prefix `pwd`/c-marpaESLIFJava-install
+# cmake --build c-marpaESLIFJava-build --config RelWithDebInfo --target package
 #
 # Single-config generator, e.g. NMake Makefiles on Windows, Unix Makefiles on Linxu:
 #
-# cmake -S c-marpaESLIF-java -B c-marpaESLIF-java-build -DCMAKE_BUILD_TYPE=RelWithDebInfo
-# cmake --build c-marpaESLIF-java-build
-# ctest --test-dir c-marpaESLIF-java-build
+# cmake -S c-marpaESLIFJava -B c-marpaESLIFJava-build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+# cmake --build c-marpaESLIFJava-build
+# ctest --test-dir c-marpaESLIFJava-build
 # Windows:
-#   cmake --install c-marpaESLIF-java-build --prefix %cd%/c-marpaESLIF-java-install
+#   cmake --install c-marpaESLIFJava-build --prefix %cd%/c-marpaESLIFJava-install
 # Others:
-#   cmake --install c-marpaESLIF-java-build --prefix `pwd`/c-marpaESLIF-java-install
-# cmake --build c-marpaESLIF-java-build --target package
+#   cmake --install c-marpaESLIFJava-build --prefix `pwd`/c-marpaESLIFJava-install
+# cmake --build c-marpaESLIFJava-build --target package
 #
-# Local tests done with: cmake -S c-marpaESLIF-java -B c-marpaESLIF-java-build -DCMAKE_HELPERS_DEBUG=OFF -DICU_ROOT=C:\icu4c-74_2-Win64-MSVC2019
+# Local tests done with: cmake -S c-marpaESLIFJava -B c-marpaESLIFJava-build -DCMAKE_HELPERS_DEBUG=OFF -DICU_ROOT=C:\icu4c-74_2-Win64-MSVC2019
 #
 cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR)
 project(marpaESLIFJava LANGUAGES C) # We will set version later
