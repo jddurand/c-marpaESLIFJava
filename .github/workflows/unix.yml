@@ -33,7 +33,7 @@ jobs:
       run: cmake --build ../build_folder
 
     - name: Test
-      run: ctest --test-dir ../build_folder --verbose
+      run: ctest --test-dir ../build_folder
 
     - name: Install
       run: cmake --install ../build_folder --prefix ${{github.workspace}}/../install_folder
