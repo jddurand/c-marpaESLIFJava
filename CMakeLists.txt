@@ -190,8 +190,9 @@ if(Java_JAVADOC_EXECUTABLE)
   install(
     DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/javadoc/marpaESLIFJava
     DESTINATION ${CMAKE_HELPERS_INSTALL_JAVADOCDIR}
-    COMPONENT marpaESLIFJavaJavadocComponent
+    COMPONENT marpaESLIFJavaHtmlComponent
   )
+  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_property_marpaESLIFJava_HaveHtmlComponent TRUE)
   add_dependencies(marpaESLIFJavaJar marpaESLIFJava_javadoc)
 endif()
 #
