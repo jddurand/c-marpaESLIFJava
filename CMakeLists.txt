@@ -121,7 +121,34 @@ endforeach()
 #
 # Create jars
 #
-file(GLOB_RECURSE _java_sources src "*.java")
+set(_java_sources
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIF.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFEvent.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFEventType.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFException.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFGrammar.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFGrammarProperties.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFGrammarRuleProperties.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFGrammarSymbolProperties.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFJSON.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFJSONDecoder.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFJSONDecoderOption.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFJSONEncoder.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFLoggerInterface.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFLoggerLevel.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFMultitonNullLogger.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFProgress.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFRecognizer.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFRecognizerInterface.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFRegexCallout.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFRulePropertyBitSet.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFSymbol.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFSymbolEventBitSet.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFSymbolPropertyBitSet.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFSymbolType.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFValue.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/org/parser/marpa/ESLIFValueInterface.java
+)
 add_jar(marpaESLIFJavaJar
   SOURCES ${_java_sources}
   OUTPUT_NAME marpaESLIF
@@ -171,51 +198,120 @@ endif()
 # Tests
 #
 include(CTest)
-file(GLOB_RECURSE _test_sources test "*.java")
-set(CMAKE_JNI_TARGET FALSE)
-set(CMAKE_JAVA_TARGET_VERSION FALSE)
-add_jar(marpaESLIFJavaTestJar
-  SOURCES ${_test_sources}
-  ENTRY_POINT org/parser/marpa/AppParse
-  OUTPUT_NAME marpaESLIFJavaTest
-)
-add_dependencies(marpaESLIFJavaTestJar marpaESLIFJavaJar)
 #
-# Recuperate our two jar files locations. It is hard to get rid of ";" interpretation if we play
-# with the -cp option, fortunately CLASSPATH environment variable exists.
+# We run no test if the JVM platform does not match our architecture
 #
-get_target_property(marpaESLIFJavaJarFile marpaESLIFJavaJar JAR_FILE)
-get_target_property(marpaESLIFJavaTestJarFile marpaESLIFJavaTestJar JAR_FILE)
-#
-# Recuperate path separator: if separator is ";" then we have to escape otherwise CTest will not understand
-#
-cmake_path(CONVERT "x;y" TO_NATIVE_PATH_LIST _xy)
-string(SUBSTRING "${_xy}" 1 1 _sep)
-if(_sep STREQUAL ";")
-  set(_sep "\\$<SEMICOLON>")
+math(EXPR _current_platform "${CMAKE_SIZEOF_VOID_P} * 8")
+message(STATUS "Checking JVM platform architecture")
+set(_can_test FALSE)
+if(Java_JAVAC_EXECUTABLE)
+  execute_process(
+    COMMAND ${Java_JAVAC_EXECUTABLE} -d ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/test/Is64.java
+    COMMAND_ECHO STDOUT
+    RESULT_VARIABLE javac_result
+    OUTPUT_VARIABLE javac_output
+    ERROR_VARIABLE javac_error
+  )
+  if((NOT RESULT_VARIABLE) OR (RESULT_VARIABLE EQUAL 0))
+    execute_process(
+      COMMAND ${Java_JAVA_EXECUTABLE} -cp ${CMAKE_CURRENT_BINARY_DIR} Is64
+      COMMAND_ECHO STDOUT
+      RESULT_VARIABLE java_result
+      OUTPUT_VARIABLE java_output
+      ERROR_VARIABLE java_error
+    )
+    if((NOT RESULT_VARIABLE) OR (RESULT_VARIABLE EQUAL 0))
+      message(STATUS "Checking JVM platform architecture - ${java_output} bits")
+      if(${java_output} EQUAL ${_current_platform})
+	set(_can_test TRUE)
+      else()
+	message(STATUS "JVM platform does not match current platform (Java: ${java_output} bits, Current: ${_current_platform} bits)")
+      endif()
+    else()
+      message(STATUS "Failed to execute Is64 java program")
+      if(java_output)
+	message(STATUS "${java_output}")
+      endif()
+      if(java_error)
+	message(STATUS "${java_error}")
+      endif()
+    endif()
+  else()
+    message(STATUS "Failed to compile Is64.java")
+    if(javac_output)
+      message(STATUS "${javac_output}")
+    endif()
+    if(javac_error)
+      message(STATUS "${javac_error}")
+    endif()
+  endif()
+else()
+  message(STATUS "Disabling test: No javac executable")
 endif()
-#
-# Declare the test. cmake_helpers_exe() has the logic to do path modifications. So we build
-# a fake binary and run test with a custom COMMAND
-#
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/marpaESLIFJavaTesterDummy.c [[
+if(NOT _can_test)
+  message(STATUS "Disabling tests")
+else()
+  set(_test_sources
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppEmptyRecognizer.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppImportExport.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppJSON.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppJSONDecoder.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppJSONEncoder.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppJSONLua.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppLexeme.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppLogger.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppParameterizedRules.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppParse.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppRecognizerInterface.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppThread.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/AppValueInterface.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/org/parser/marpa/Describe.java
+  )
+  set(CMAKE_JNI_TARGET FALSE)
+  set(CMAKE_JAVA_TARGET_VERSION FALSE)
+  add_jar(marpaESLIFJavaTestJar
+    SOURCES ${_test_sources}
+    INCLUDE_JARS marpaESLIFJavaJar
+    ENTRY_POINT org/parser/marpa/AppParse
+    OUTPUT_NAME marpaESLIFJavaTest
+  )
+  add_dependencies(marpaESLIFJavaTestJar marpaESLIFJavaJar)
+  #
+  # Recuperate our two jar files locations. It is hard to get rid of ";" interpretation if we play
+  # with the -cp option, fortunately CLASSPATH environment variable exists.
+  #
+  get_target_property(marpaESLIFJavaJarFile marpaESLIFJavaJar JAR_FILE)
+  get_target_property(marpaESLIFJavaTestJarFile marpaESLIFJavaTestJar JAR_FILE)
+  #
+  # Recuperate path separator: if separator is ";" then we have to escape otherwise CTest will not understand
+  #
+  cmake_path(CONVERT "x;y" TO_NATIVE_PATH_LIST _xy)
+  string(SUBSTRING "${_xy}" 1 1 _sep)
+  if(_sep STREQUAL ";")
+    set(_sep "\\$<SEMICOLON>")
+  endif()
+  #
+  # Declare the test. cmake_helpers_exe() has the logic to do path modifications. So we build
+  # a fake binary and run test with a custom COMMAND
+  #
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/marpaESLIFJavaTesterDummy.c [[
 #include <stdlib.h>
 
 int main(int argc, char **argv) {
   exit(0);
 }
 ]])
-include(CTest)
-cmake_helpers_exe(marpaESLIFJavaTester
-  INSTALL FALSE
-  TEST TRUE
-  SOURCES marpaESLIFJavaTesterDummy.c
-  #
-  # Note how we play with ${_sep}
-  #
-  ENVIRONMENTS "CLASSPATH=set:${marpaESLIFJavaJarFile}${_sep}${marpaESLIFJavaTestJarFile}"
-  COMMAND ${CMAKE_COMMAND} -E env ${Java_JAVA_EXECUTABLE} org.parser.marpa.AppParse
-)
+  cmake_helpers_exe(marpaESLIFJavaTester
+    INSTALL FALSE
+    TEST TRUE
+    SOURCES marpaESLIFJavaTesterDummy.c
+    #
+    # Note how we play with ${_sep}
+    #
+    ENVIRONMENTS "CLASSPATH=set:${marpaESLIFJavaJarFile}${_sep}${marpaESLIFJavaTestJarFile}"
+    COMMAND ${CMAKE_COMMAND} -E env ${Java_JAVA_EXECUTABLE} org.parser.marpa.AppParse
+  )
+endif()
 #
 # Package
 #
