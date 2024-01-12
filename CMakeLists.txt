@@ -26,6 +26,11 @@
 cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR)
 project(marpaESLIFJava LANGUAGES C) # We will set version later
 #
+# PROJECT_VERSION: see below. we will inherit marpaESLIF's PROJECT_VESION, and increment
+# only PROJECT_VERSION_TWEAK
+#
+set(PROJECT_VERSION_TWEAK 1)
+#
 # Java dependency
 #
 find_package(Java REQUIRED) # For Java_JAVA_EXECUTABLE
