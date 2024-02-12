@@ -2644,7 +2644,7 @@ static short ESLIFGrammar_contextb(JNIEnv *envp, jobject eslifGrammarp, marpaESL
 /*****************************************************************************/
 {
   static const char   *funcs              = "ESLIFGrammar_contextb";
-  marpaESLIFGrammar_t *marpaESLIFGrammarp = NULL;;
+  marpaESLIFGrammar_t *marpaESLIFGrammarp = NULL;
   jobject              BYTEBUFFER(marpaESLIFGrammar);
   jobject              eslifp;
     
